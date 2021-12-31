@@ -4,6 +4,8 @@ _This project is meant to be forked. The original project is available here: htt
 
 Using this project, you can set up your own site for searching and filtering your boardgame collection. As an example, have a look at this: https://games.emilstenstrom.se
 
+![Site preview](mybgg-preview.png)
+
 ## Requirements
 
 * [GitHub](https://github.com) account (free). We will serve the site using GitHub Pages.
@@ -65,7 +67,7 @@ Using this project, you can set up your own site for searching and filtering you
       ```
    </details>
 
-3. **Install the python libraries needed** by running:
+3. **Install the python libraries needed** by running:<br>
    ```pip install -r scripts/requirements.txt```
 
    <details>
@@ -76,7 +78,7 @@ Using this project, you can set up your own site for searching and filtering you
       * The mybgg project comes with a requirements.txt file, that specifies which version of things it needs. So go to the project, and type the above command there. Everything you need should be installed.
    </details>
 
-4. **Download your games from boardgamegeek and send them to algolia**:
+4. **Download your games from boardgamegeek and send them to algolia**:<br>
    ```python scripts/download_and_index.py --apikey YOUR_ALGOLIA_ADMIN_API_KEY```
 
    (_Note that this API KEY is NOT the same as the one you put in config.json. Never share your admin api key publicly_)
