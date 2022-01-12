@@ -13,7 +13,7 @@
         "app_id": "7EPPM1XCKR",
         "api_key_search_only": "64546665d13d24af4df228ee09bedf0a",
         "index_name": "board_games",
-        "hits_per_page": 24,
+        "hits_per_page": 50,
         "sort_by": "asc(name)"
     }
 }
