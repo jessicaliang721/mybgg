@@ -27,14 +27,32 @@ class BGGClient:
         collection = self._collection_to_games(data)
         return collection
 
+    def plays(self, user_name):
+        params = {
+            "username": user_name,
+            "page": 1,
+        }
+        all_plays = []
+
+        data = self._make_request("/plays?version=1", params)
+        new_plays = self._plays_to_games(data)
+
+        while (len(new_plays) > 0):
+            all_plays = all_plays + new_plays
+            params["page"] += 1
+            data = self._make_request("/plays?version=1", params)
+            new_plays = self._plays_to_games(data)
+
+        return all_plays
+
     def game_list(self, game_ids):
         if not game_ids:
             return []
 
         # Split game_ids into smaller chunks to avoid "414 URI too long"
-        def chunks(l, n):
-            for i in range(0, len(l), n):
-                yield l[i:i + n]
+        def chunks(iterable, n):
+            for i in range(0, len(iterable), n):
+                yield iterable[i:i + n]
 
         games = []
         for game_ids_subset in chunks(game_ids, 100):
@@ -48,7 +66,7 @@ class BGGClient:
 
         try:
             response = self.requester.get(BGGClient.BASE_URL + url, params=params)
-        except requests.exceptions.ConnectionError:
+        except (requests.exceptions.ConnectionError, requests.exceptions.ChunkedEncodingError):
             if tries < 3:
                 time.sleep(2)
                 return self._make_request(url, params=params, tries=tries + 1)
@@ -72,9 +90,15 @@ class BGGClient:
                     time.sleep(2)
                     return self._make_request(url, params=params, tries=tries + 1)
 
+            # Handle 429 Too Many Requests
+            if response.status_code == 429:
+                if tries < 3:
+                    logger.debug("BGG returned \"Too Many Requests\", waiting 30 seconds before trying again...")
+                    time.sleep(30)
+                    return self._make_request(url, params=params, tries=tries + 1)
+
             raise BGGException(
-                f"BGG returned status code {response.status_code} when "
-                f"requesting {response.url}"
+                f"BGG returned status code {response.status_code} when requesting {response.url}"
             )
 
         tree = fromstring(response.text)
@@ -85,6 +109,32 @@ class BGGClient:
             )
 
         return response.text
+
+    def _plays_to_games(self, data):
+        def after_players_hook(_, status):
+            return status["name"] if "name" in status else "Unknown"
+
+        plays_processor = xml.dictionary("plays", [
+            xml.array(
+                xml.dictionary('play', [
+                    xml.integer(".", attribute="id", alias="playid"),
+                    xml.dictionary('item', [
+                        xml.string(".", attribute="name", alias="gamename"),
+                        xml.integer(".", attribute="objectid", alias="gameid")
+                    ], alias='game'),
+                    xml.array(
+                        xml.dictionary('players/player', [
+                            xml.string(".", attribute="name", required=False, default="Unknown")
+                        ], required=False, alias='players', hooks=xml.Hooks(after_parse=after_players_hook))
+                    )
+
+                ], required=False, alias="plays")
+            )
+        ])
+
+        plays = xml.parse_from_string(plays_processor, data)
+        plays = plays["plays"]
+        return plays
 
     def _collection_to_games(self, data):
         def after_status_hook(_, status):
@@ -207,6 +257,7 @@ class BGGClient:
                         xml.string(
                             "statistics/ratings/ranks/rank[@friendlyname='Board Game Rank']",
                             attribute="value",
+                            required=False,
                             alias="rank"
                         ),
                         xml.string(
