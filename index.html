@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>All my boardgames</title>
   <meta charset="utf-8">
@@ -7,13 +8,16 @@
   <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
   <script src="https://cdn.jsdelivr.net/npm/algoliasearch@4.1.0/dist/algoliasearch-lite.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@4.3.1/dist/instantsearch.production.min.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.css@7.1.1/themes/reset-min.css">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/instantsearch.css@7.1.1/themes/reset-min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,700&amp;display=swap">
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
   <header class="search">
     <img class="logo" src="favicon.ico" height="36" width="36">
+    <h1>Our Board Games</h1>
     <div class="search-box" id="search-box"></div>
     <label>Sort by:</label>
     <div class="sort-by" id="sort-by"></div>
@@ -21,21 +25,40 @@
     <a class="ref" href="https://www.algolia.com"><img src="search-by-algolia.png" width="130" height="18"></a>
   </header>
   <article class="wrapper">
-    <aside class="facets">
-      <div class="facet" id="facet-players" tabindex="0"></div>
-      <div class="facet" id="facet-playing-time" tabindex="0"></div>
-      <div class="facet" id="facet-weight" tabindex="0"></div>
-      <div class="facet" id="facet-categories" tabindex="0"></div>
-      <div class="facet" id="facet-mechanics" tabindex="0"></div>
-      <div class="facet" id="facet-min-age" tabindex="0"></div>
-      <div class="facet" id="facet-previous-players" tabindex="0"></div>
-      <div class="facet" id="facet-numplays" tabindex="0"></div>
-      <div class="clear-all" id="clear-all"></div>
-    </aside>
-    <main class="results">
-      <div class="hits" id="hits"></div>
-      <div id="pagination"></div>
-    </main>
+
+    <!-- MAIN LAYOUT -->
+    <div class="content">
+
+      <!-- FACETS -->
+      <aside class="facets">
+        <div class="facet" id="facet-players"></div>
+        <div class="facet" id="facet-playing-time"></div>
+        <div class="facet" id="facet-weight"></div>
+        <div class="facet" id="facet-categories"></div>
+        <div class="facet" id="facet-mechanics"></div>
+        <div class="facet" id="facet-min-age"></div>
+        <div class="facet" id="facet-previous-players"></div>
+        <div class="facet" id="facet-numplays"></div>
+      </aside>
+
+      <!-- TOP FILTER BAR -->
+      <header class="filters-bar">
+
+        <div class="selected-filters">
+          <div id="current-refinements"></div>
+          <div class="clear-all" id="clear-all"></div>
+        </div>
+
+      </header>
+
+      <!-- RESULTS -->
+      <main class="results">
+        <div class="hits" id="hits"></div>
+        <div id="pagination"></div>
+      </main>
+
+    </div>
+
   </article>
 
   <script type="text/html" id="hits-template">
@@ -111,4 +134,5 @@
 
   <script src="app.js"></script>
 </body>
+
 </html>

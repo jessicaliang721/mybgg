@@ -10,9 +10,9 @@ function loadJSON(path, callback) {
   req.send(null);
 }
 
-function close_all(event){
+function close_all(event) {
   var details = document.querySelectorAll("details");
-  details.forEach(function(details_elem){
+  details.forEach(function (details_elem) {
     if (details_elem.hasAttribute("open")) {
       details_elem.removeAttribute("open");
     }
@@ -20,46 +20,45 @@ function close_all(event){
 }
 
 function on_render() {
+  document.querySelectorAll(".facet .ais-Panel-body").forEach(function (p) {
+    p.style.display = "none";
+  });
+
   var hits = document.querySelectorAll(".ais-Hits-item");
-  hits.forEach(function(hit) {
+  hits.forEach(function (hit) {
     color = hit.querySelector("img").getAttribute("data-maincolor");
     hit.setAttribute("style", "background: rgba(" + color + ", 0.5)");
   })
 
-  if ("ontouchstart" in window) {
-    function close_all_panels(facets) {
-      facets.querySelectorAll(".facet .ais-Panel-body").forEach(function(panel_body) {
-        panel_body.style.display = "none";
-      });
-    }
-    function toggle_panel(facet) {
-      var panel_body = facet.querySelector(".ais-Panel-body");
-      var style = window.getComputedStyle(panel_body);
-      if (style.display == "none") {
-        close_all_panels(facet.parentElement);
-        panel_body.style.display = "inline-block";
-      }
-      else {
-        panel_body.style.display = "none";
-      }
-    }
+  function enableFacetToggle() {
+    const facets = document.querySelectorAll(".facet");
 
-    var facets = document.querySelectorAll(".facet");
-    facets.forEach(function(facet) {
-      var is_loaded = facet.getAttribute("loaded");
-      if (!is_loaded) {
-        facet.addEventListener("click", function(event) {
-          toggle_panel(facet);
-          event.stopPropagation();
+    facets.forEach((facet) => {
+      if (facet.dataset.bound === "true") return;
+
+      facet.dataset.bound = "true";
+
+      facet.addEventListener("click", function (event) {
+        const panel = facet.querySelector(".ais-Panel-body");
+        if (!panel) return;
+
+        const isOpen = panel.style.display === "block";
+
+        // close all
+        document.querySelectorAll(".facet .ais-Panel-body").forEach(p => {
+          p.style.display = "none";
         });
-        facet.setAttribute("loaded", true);
-      }
+
+        // toggle current
+        panel.style.display = isOpen ? "none" : "block";
+
+        event.stopPropagation();
+      });
     });
   }
-
   var summaries = document.querySelectorAll("summary");
-  summaries.forEach(function(elem){
-    function conditional_close(){
+  summaries.forEach(function (elem) {
+    function conditional_close() {
       close_all();
       if (!elem.parentElement.hasAttribute("open")) {
         var game_details = elem.parentElement.querySelector(".game-details");
@@ -72,7 +71,7 @@ function on_render() {
   document.addEventListener("click", close_all);
 
   var game_details = document.querySelectorAll(".game-details");
-  game_details.forEach(function(elem){
+  game_details.forEach(function (elem) {
     var close = document.createElement("div");
     close.setAttribute("class", "close");
     close.setAttribute("tabindex", "0");
@@ -84,10 +83,11 @@ function on_render() {
     close.addEventListener("keypress", close_details);
     elem.appendChild(close);
 
-    elem.addEventListener("click", function(event){
+    elem.addEventListener("click", function (event) {
       event.stopPropagation();
     });
   });
+  enableFacetToggle();
 }
 
 function get_widgets(SETTINGS) {
@@ -125,10 +125,10 @@ function get_widgets(SETTINGS) {
     "sort": instantsearch.widgets.sortBy({
       container: '#sort-by',
       items: [
-        {label: 'Name', value: SETTINGS.algolia.index_name},
-        {label: 'BGG Rank', value: SETTINGS.algolia.index_name + '_rank_ascending'},
-        {label: 'Number of ratings', value: SETTINGS.algolia.index_name + '_numrated_descending'},
-        {label: 'Number of owners', value: SETTINGS.algolia.index_name + '_numowned_descending'}
+        { label: 'Name', value: SETTINGS.algolia.index_name },
+        { label: 'BGG Rank', value: SETTINGS.algolia.index_name + '_rank_ascending' },
+        { label: 'Number of ratings', value: SETTINGS.algolia.index_name + '_numrated_descending' },
+        { label: 'Number of owners', value: SETTINGS.algolia.index_name + '_numowned_descending' }
       ]
     }),
     "clear": instantsearch.widgets.clearRefinements({
@@ -137,6 +137,10 @@ function get_widgets(SETTINGS) {
         resetLabel: 'Clear all'
       }
     }),
+    "current_refinements":
+      instantsearch.widgets.currentRefinements({
+        container: '#current-refinements'
+      }),
     "refine_categories": panel('Categories')(instantsearch.widgets.refinementList)(
       {
         container: '#facet-categories',
@@ -161,7 +165,7 @@ function get_widgets(SETTINGS) {
         collapsible: true,
         attributes: ['players.level1', 'players.level2'],
         operator: 'or',
-        sortBy: function(a, b){ return parseInt(a.name) - parseInt(b.name); },
+        sortBy: function (a, b) { return parseInt(a.name) - parseInt(b.name); },
       }
     ),
     "refine_weight": panel('Complexity')(instantsearch.widgets.refinementList)(
@@ -169,7 +173,7 @@ function get_widgets(SETTINGS) {
         container: '#facet-weight',
         attribute: 'weight',
         operator: 'or',
-        sortBy: function(a, b){ return WEIGHT_LABELS.indexOf(a.name) - WEIGHT_LABELS.indexOf(b.name); },
+        sortBy: function (a, b) { return WEIGHT_LABELS.indexOf(a.name) - WEIGHT_LABELS.indexOf(b.name); },
       }
     ),
     "refine_playingtime": panel('Playing time')(instantsearch.widgets.refinementList)(
@@ -177,7 +181,7 @@ function get_widgets(SETTINGS) {
         container: '#facet-playing-time',
         attribute: 'playing_time',
         operator: 'or',
-        sortBy: function(a, b){ return PLAYING_TIME_ORDER.indexOf(a.name) - PLAYING_TIME_ORDER.indexOf(b.name); },
+        sortBy: function (a, b) { return PLAYING_TIME_ORDER.indexOf(a.name) - PLAYING_TIME_ORDER.indexOf(b.name); },
       }
     ),
     "refine_min_age": panel('Min age')(instantsearch.widgets.numericMenu)(
@@ -222,21 +226,21 @@ function get_widgets(SETTINGS) {
     ),
     "hits": instantsearch.widgets.hits({
       container: '#hits',
-      transformItems: function(items) {
+      transformItems: function (items) {
         hide_facet_when_no_data('#facet-previous-players', items, 'previous_players');
         hide_facet_when_no_data('#facet-numplays', items, 'numplays');
 
-        return items.map(function(game){
+        return items.map(function (game) {
           players = [];
-          game.players.forEach(function(num_players){
+          game.players.forEach(function (num_players) {
             match = num_players.level2.match(/^\d+\ >\ ([\w\ ]+)\ (?:with|allows)\ (\d+\+?)$/);
             type = match[1].toLowerCase();
             num = match[2];
 
             type_callback = {
-              'best': function(num) { return '<strong>' + num + '</strong><span title="Best with">★</span>'; },
-              'recommended': function(num) { return num; },
-              'expansion': function(num) { return num + '<span title="With expansion">⊕</span>'; },
+              'best': function (num) { return '<strong>' + num + '</strong><span title="Best with">★</span>'; },
+              'recommended': function (num) { return num; },
+              'expansion': function (num) { return num + '<span title="With expansion">⊕</span>'; },
             };
             players.push(type_callback[type](num));
 
@@ -253,7 +257,7 @@ function get_widgets(SETTINGS) {
           game.has_more_expansions = (game.has_more_expansions);
 
           if (game.has_more_expansions) {
-            game_prefix = game.name.indexOf(":")? game.name.substring(0, game.name.indexOf(":")) : game.name;
+            game_prefix = game.name.indexOf(":") ? game.name.substring(0, game.name.indexOf(":")) : game.name;
             expansions_url_data = {
               searchstr: game_prefix,
               searchfield: "title",
@@ -264,7 +268,7 @@ function get_widgets(SETTINGS) {
               "https://boardgamegeek.com/collection/user/" +
               encodeURIComponent(SETTINGS.boardgamegeek.user_name) +
               "?" +
-              (Object.keys(expansions_url_data).map(function(key){
+              (Object.keys(expansions_url_data).map(function (key) {
                 return key + "=" + expansions_url_data[key];
               })).join("&")  // Don't encode game_prefix, because bgg redirects indefinately then...
             );
@@ -348,6 +352,7 @@ function init(SETTINGS) {
     widgets["search"],
     widgets["sort"],
     widgets["clear"],
+    widgets["current_refinements"],
     widgets["refine_categories"],
     widgets["refine_mechanics"],
     widgets["refine_players"],
@@ -374,5 +379,11 @@ function init(SETTINGS) {
   }
   set_bgg_name();
 }
+
+document.addEventListener("click", function () {
+  document.querySelectorAll(".facet .ais-Panel-body").forEach(function (p) {
+    p.style.display = "none";
+  });
+});
 
 loadJSON("config.json", init);
